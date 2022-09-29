@@ -1,6 +1,10 @@
 import { AbstractPlugin } from '../abstract.plugin';
 import { Client } from 'pg';
 import { StringOptionKeys, Wal2JsonPluginOptions } from './wal2json-plugin-options.type';
+import Pick from 'stream-json/filters/Pick'
+import {streamArray} from 'stream-json/streamers/StreamArray'
+import {chain} from 'stream-chain'
+import {Readable} from 'stream'
 
 /**
  * wal2json
@@ -28,9 +32,25 @@ export class Wal2JsonPlugin extends AbstractPlugin<Wal2JsonPluginOptions> {
     return client.query(sql);
   }
 
-  parse(buffer: Buffer): any {
+  parse(buffer: Buffer, cb: Function): any {
+
+    // console.log(buffer.toString())
+    // console.log('incoming buffer')
+    let stream = Readable.from(buffer);
+
+    const pipeline = chain([
+      stream,
+      Pick.withParser({filter: 'change'}),
+      streamArray()
+    ])    
+
+    pipeline.on('data', (data) => {
+      // console.log('returning data', data)
+      // return data;
+      cb(data)
+    })
     // console.log(buffer.toString());
-    return JSON.parse(buffer.toString());
+    // return JSON.parse(buffer.toString());
   }
 }
 

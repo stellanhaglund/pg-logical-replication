@@ -5,5 +5,5 @@ export abstract class AbstractPlugin<OPTION = any> {
 
   public abstract get name(): string;
   public abstract start(client: Client, slotName: string, lastLsn: string): Promise<any>;
-  public abstract parse(buffer: Buffer): any;
+  public abstract parse(buffer: Buffer, cb: Function): any;
 }
